@@ -247,6 +247,52 @@ const heroSlides = [
 
 // --- COMPONENTS ---
 
+const AnimatedCounter = ({
+  value,
+  suffix = '',
+  prefix = '',
+  duration = 1600,
+  decimals = 0,
+}: {
+  value: number;
+  suffix?: string;
+  prefix?: string;
+  duration?: number;
+  decimals?: number;
+}) => {
+  const [displayValue, setDisplayValue] = useState(0);
+
+  useEffect(() => {
+    let frame = 0;
+    let startTime: number | null = null;
+
+    const tick = (time: number) => {
+      if (startTime === null) {
+        startTime = time;
+      }
+
+      const progress = Math.min((time - startTime) / duration, 1);
+      const nextValue = value * (1 - Math.pow(1 - progress, 3));
+      setDisplayValue(nextValue);
+
+      if (progress < 1) {
+        frame = window.requestAnimationFrame(tick);
+      }
+    };
+
+    frame = window.requestAnimationFrame(tick);
+    return () => window.cancelAnimationFrame(frame);
+  }, [value, duration]);
+
+  return (
+    <span>
+      {prefix}
+      {displayValue.toFixed(decimals)}
+      {suffix}
+    </span>
+  );
+};
+
 const Navbar = ({ activePage, onNavigate }: { activePage: Page, onNavigate: (p: Page) => void }) => {
   const [scrolled, setScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -267,14 +313,14 @@ const Navbar = ({ activePage, onNavigate }: { activePage: Page, onNavigate: (p: 
   ];
 
   return (
-    <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
+    <nav className={`sticky top-0 left-0 right-0 z-50 transition-all duration-500 ${
       isHomeTop
-        ? 'bg-black/45 backdrop-blur-2xl py-4 border-b border-white/10 shadow-[0_12px_50px_rgba(0,0,0,0.2)]'
-        : 'bg-white/82 backdrop-blur-xl py-4 border-b border-gray-100 shadow-[0_10px_40px_rgba(0,0,0,0.04)]'
+        ? 'bg-[linear-gradient(135deg,rgba(3,8,6,0.90),rgba(18,56,31,0.72))] backdrop-blur-2xl py-4 border-b border-white/10 shadow-[0_18px_60px_rgba(0,0,0,0.22)]'
+        : 'bg-[linear-gradient(135deg,rgba(255,255,255,0.94),rgba(246,249,241,0.92))] backdrop-blur-2xl py-4 border-b border-white/70 shadow-[0_14px_45px_rgba(15,23,42,0.07)]'
     }`}>
       <div className="container-custom flex items-center justify-between">
         <button onClick={() => onNavigate('home')} className="flex items-center gap-4 group text-left">
-          <div className="relative w-14 h-14 flex items-center justify-center overflow-hidden rounded-2xl border border-white/20 bg-white/80">
+          <div className="relative w-14 h-14 flex items-center justify-center overflow-hidden rounded-2xl border border-white/20 bg-[linear-gradient(180deg,rgba(255,255,255,0.95),rgba(245,248,241,0.9))] shadow-[0_10px_24px_rgba(15,23,42,0.08)]">
             <img src={logoImage} alt={companyName} className="h-full w-full object-cover" />
           </div>
           <div className="flex flex-col">
@@ -289,22 +335,22 @@ const Navbar = ({ activePage, onNavigate }: { activePage: Page, onNavigate: (p: 
             <button
               key={link.id}
               onClick={() => onNavigate(link.id)}
-              className={`text-[10px] font-bold uppercase tracking-[0.2em] transition-all relative group py-2 ${activePage === link.id ? (isHomeTop ? 'text-white' : 'text-primary') : (isHomeTop ? 'text-white/70 hover:text-white' : 'text-gray-500 hover:text-primary')}`}
+              className={`group relative inline-flex items-center py-2 text-[10px] font-bold uppercase tracking-[0.2em] transition-all duration-300 hover:-translate-y-0.5 ${activePage === link.id ? (isHomeTop ? 'text-white' : 'text-primary') : (isHomeTop ? 'text-white/70 hover:text-white' : 'text-gray-500 hover:text-primary')}`}
             >
               {link.label}
-              <span className={`absolute -bottom-1 left-1/2 -translate-x-1/2 w-0 h-1 bg-secondary rounded-full transition-all duration-500 group-hover:w-full ${activePage === link.id ? 'w-full' : ''}`} />
+              <span className={`absolute -bottom-1 left-1/2 h-1 -translate-x-1/2 rounded-full bg-secondary transition-all duration-300 group-hover:w-full ${activePage === link.id ? 'w-full' : 'w-0'}`} />
             </button>
           ))}
           <button 
             onClick={() => onNavigate('contact')}
-            className="btn-primary"
+            className="btn-primary shadow-[0_18px_45px_rgba(36,95,42,0.2)]"
           >
-            Start Project <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
+            Contact Us <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
           </button>
         </div>
 
         {/* Mobile Toggle */}
-        <button className={`lg:hidden p-2 rounded-xl transition-colors ${isHomeTop ? 'text-white hover:bg-white/10' : 'text-primary hover:bg-gray-100'}`} onClick={() => setMobileMenuOpen(true)}>
+        <button className={`lg:hidden p-2 rounded-xl transition-all duration-300 hover:-translate-y-0.5 ${isHomeTop ? 'text-white hover:bg-white/10' : 'text-primary hover:bg-primary/5'}`} onClick={() => setMobileMenuOpen(true)}>
           <Menu size={28} />
         </button>
       </div>
@@ -326,7 +372,7 @@ const Navbar = ({ activePage, onNavigate }: { activePage: Page, onNavigate: (p: 
                 <button
                   key={link.id}
                   onClick={() => { onNavigate(link.id); setMobileMenuOpen(false); }}
-                  className={`text-4xl font-display font-bold uppercase transition-colors ${activePage === link.id ? 'text-secondary' : 'text-primary hover:text-secondary'}`}
+                  className={`text-4xl font-display font-bold uppercase transition-all duration-300 hover:-translate-y-0.5 ${activePage === link.id ? 'text-secondary' : 'text-primary hover:text-secondary'}`}
                 >
                   {link.label}
                 </button>
@@ -336,7 +382,7 @@ const Navbar = ({ activePage, onNavigate }: { activePage: Page, onNavigate: (p: 
               onClick={() => { onNavigate('contact'); setMobileMenuOpen(false); }}
               className="btn-primary w-full max-w-xs py-5 text-lg"
             >
-              Free Consultant
+              Contact Us
             </button>
           </motion.div>
         )}
@@ -347,8 +393,8 @@ const Navbar = ({ activePage, onNavigate }: { activePage: Page, onNavigate: (p: 
 
 const Footer = ({ onNavigate }: { onNavigate: (p: Page) => void }) => {
   return (
-    <footer className="relative overflow-hidden bg-[#114713] pt-20 pb-8 text-white">
-      <div className="absolute inset-0 opacity-[0.08] bg-[radial-gradient(circle_at_top_left,white_0,transparent_32%),radial-gradient(circle_at_bottom_right,white_0,transparent_28%)]"></div>
+    <footer className="relative overflow-hidden bg-[linear-gradient(135deg,#0f4317,#13531d_45%,#0d3813)] pt-20 pb-8 text-white">
+      <div className="absolute inset-0 opacity-[0.12] bg-[radial-gradient(circle_at_top_left,white_0,transparent_32%),radial-gradient(circle_at_bottom_right,white_0,transparent_28%)]"></div>
       <div className="container-custom relative z-10">
         <div className="grid grid-cols-1 lg:grid-cols-[1.25fr_0.8fr_0.8fr_1.25fr] gap-14 items-start">
           <div className="text-left max-w-md">
@@ -476,7 +522,7 @@ const HomePage = ({ onNavigate }: { onNavigate: (p: Page) => void }) => {
 
   return (
     <div className="overflow-hidden bg-[#f8faf7]">
-      <section className="relative isolate min-h-screen overflow-hidden bg-[#07110d] pt-24">
+      <section className="relative isolate min-h-[88vh] overflow-hidden bg-[#07110d] pt-0">
         <div className="absolute inset-0">
           <AnimatePresence mode="wait">
             <motion.img
@@ -490,38 +536,51 @@ const HomePage = ({ onNavigate }: { onNavigate: (p: Page) => void }) => {
               transition={{ duration: 0.9, ease: 'easeOut' }}
             />
           </AnimatePresence>
-          <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(3,8,6,0.94)_0%,rgba(3,8,6,0.78)_40%,rgba(3,8,6,0.34)_100%)]" />
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.16),transparent_34%),radial-gradient(circle_at_bottom_left,rgba(173,204,53,0.12),transparent_28%)]" />
+          <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(3,8,6,0.92)_0%,rgba(3,8,6,0.74)_42%,rgba(3,8,6,0.28)_100%)]" />
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.16),transparent_34%),radial-gradient(circle_at_bottom_left,rgba(240,185,11,0.12),transparent_28%)]" />
+          <motion.div
+            aria-hidden="true"
+            className="absolute -top-16 right-12 h-72 w-72 rounded-full bg-secondary/20 blur-3xl"
+            animate={{ y: [0, 16, 0], x: [0, -12, 0], opacity: [0.35, 0.6, 0.35] }}
+            transition={{ duration: 12, repeat: Infinity, ease: 'easeInOut' }}
+          />
+          <motion.div
+            aria-hidden="true"
+            className="absolute bottom-12 left-10 h-56 w-56 rounded-full bg-primary/20 blur-3xl"
+            animate={{ y: [0, -12, 0], x: [0, 8, 0], opacity: [0.2, 0.42, 0.2] }}
+            transition={{ duration: 14, repeat: Infinity, ease: 'easeInOut' }}
+          />
         </div>
 
-        <div className="container-custom relative z-10 flex min-h-[calc(100vh-6rem)] items-center pb-16">
+        <div className="container-custom relative z-10 flex min-h-[88vh] items-start pt-12 md:pt-16 pb-14 md:pb-20">
           <div className="grid w-full grid-cols-1 items-center">
             <motion.div
               initial={{ opacity: 0, x: -28 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 1, ease: 'easeOut' }}
-              className="max-w-4xl text-left text-white"
+              className="max-w-5xl text-left text-white pt-2 md:pt-4"
             >
-              <div className="inline-flex items-center gap-3 rounded-full border border-white/15 bg-white/10 px-4 py-2 backdrop-blur-xl">
+              <div className="inline-flex items-center gap-3 rounded-full border border-white/15 bg-white/10 px-5 py-2.5 backdrop-blur-xl">
                 <span className="h-2 w-2 rounded-full bg-secondary" />
-                <span className="text-[9px] font-bold uppercase tracking-[0.38em] text-white/85">
+                <span className="text-[9px] md:text-[10px] font-bold uppercase tracking-[0.38em] text-white/85">
                   Clean energy, engineered
                 </span>
               </div>
 
-              <h1 className="mt-8 max-w-5xl text-4xl font-semibold leading-[0.95] tracking-tight text-white md:text-6xl lg:text-[5.4rem]">
-                <span className="block">Reliable solar solutions</span>
-                <span className="block">for homes, businesses, and industry across India</span>
+              <h1 className="mt-8 max-w-5xl text-4xl font-semibold leading-[0.9] tracking-tight text-white md:text-6xl lg:text-[5.8rem]">
+                <span className="block">Powering India with</span>
+                <span className="block text-secondary">premium solar solutions</span>
+                <span className="block">for homes, businesses, and industry</span>
               </h1>
 
-              <p className="mt-8 max-w-2xl text-base leading-relaxed text-white/72 md:text-lg">
+              <p className="mt-9 max-w-2xl text-base leading-relaxed text-white/72 md:text-lg">
                 Premium rooftop, ground-mount, and industrial solar systems designed with a cleaner look, smoother delivery, and long-term performance.
               </p>
 
-              <div className="mt-9 flex flex-col gap-4 sm:flex-row sm:items-center">
+              <div className="mt-10 flex flex-col gap-4 sm:flex-row sm:items-center">
                 <button
                   onClick={() => onNavigate('contact')}
-                  className="inline-flex items-center justify-center gap-4 rounded-full bg-secondary px-7 py-4.5 text-sm font-bold text-primary transition-all duration-500 hover:-translate-y-1 hover:bg-lime-300"
+                  className="inline-flex items-center justify-center gap-4 rounded-full bg-secondary px-8 py-4.5 text-sm font-bold text-primary transition-all duration-500 hover:-translate-y-1 hover:bg-lime-300 shadow-[0_18px_40px_rgba(255,193,7,0.22)]"
                 >
                   Get Started
                   <span className="flex h-9 w-9 items-center justify-center rounded-full bg-white text-primary">
@@ -536,7 +595,7 @@ const HomePage = ({ onNavigate }: { onNavigate: (p: Page) => void }) => {
                 </button>
               </div>
 
-              <div className="mt-10 grid max-w-2xl grid-cols-2 gap-3 text-left sm:grid-cols-4">
+              <div className="mt-12 grid max-w-2xl grid-cols-2 gap-3 text-left sm:grid-cols-4">
                 {[
                   { value: '500+', label: 'Projects delivered' },
                   { value: '50MW+', label: 'Installed capacity' },
@@ -576,22 +635,38 @@ const HomePage = ({ onNavigate }: { onNavigate: (p: Page) => void }) => {
               </p>
             </div>
 
-          <div className="grid grid-cols-2 gap-6 lg:grid-cols-4">
-            {[
-              { label: 'Successful Installs', value: '500+', icon: CheckCircle },
-              { label: 'Installed Capacity', value: '50MW+', icon: Zap },
-              { label: 'CO2 Offset/Year', value: '1.2M Tons', icon: Leaf },
-              { label: 'Uptime Score', value: '99.9%', icon: Settings }
-            ].map((stat, i) => (
-              <div key={i} className="group rounded-[2rem] border border-gray-100 bg-white p-6 text-left shadow-[0_10px_30px_rgba(15,23,42,0.04)] transition-all duration-500 hover:-translate-y-1 hover:shadow-[0_18px_40px_rgba(15,23,42,0.08)]">
-                <div className="w-11 h-11 bg-primary/6 rounded-xl flex items-center justify-center mb-6 group-hover:bg-primary group-hover:text-white transition-all duration-500">
-                  <stat.icon size={20} />
-                </div>
-                <span className="text-4xl md:text-5xl font-semibold text-primary tracking-tight mb-3 block group-hover:text-secondary transition-colors duration-500">{stat.value}</span>
-                <span className="text-[10px] font-bold uppercase tracking-[0.28em] text-gray-400">{stat.label}</span>
-              </div>
-            ))}
-          </div>
+            <div className="grid grid-cols-2 gap-5 lg:grid-cols-4">
+              {[
+                { label: 'Successful Installs', value: 500, suffix: '+', icon: CheckCircle, accent: 'from-primary/10 to-primary/5' },
+                { label: 'Installed Capacity', value: 50, suffix: 'MW+', icon: Zap, accent: 'from-secondary/20 to-secondary/10' },
+                { label: 'CO2 Offset / Year', value: 1.2, suffix: 'M Tons', icon: Leaf, accent: 'from-emerald-100 to-emerald-50', decimals: 1 },
+                { label: 'Uptime Score', value: 99.9, suffix: '%', icon: Settings, accent: 'from-slate-100 to-slate-50', decimals: 1 },
+              ].map((stat, i) => (
+                <motion.div
+                  key={i}
+                  whileHover={{ y: -6, scale: 1.01 }}
+                  transition={{ duration: 0.25 }}
+                  className="group relative overflow-hidden rounded-[2rem] border border-white/80 bg-white p-6 text-left shadow-[0_10px_30px_rgba(15,23,42,0.04)]"
+                >
+                  <div className={`absolute inset-0 bg-gradient-to-br ${stat.accent} opacity-0 transition-opacity duration-500 group-hover:opacity-100`} />
+                  <div className="relative z-10">
+                    <div className="mb-5 flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/6 text-primary transition-all duration-500 group-hover:bg-primary group-hover:text-white">
+                      <stat.icon size={20} />
+                    </div>
+                    <div className="mb-3 text-3xl md:text-5xl font-semibold tracking-tight text-primary transition-colors duration-500 group-hover:text-primary-dark">
+                      <AnimatedCounter
+                        value={stat.value}
+                        suffix={stat.suffix}
+                        decimals={stat.decimals ?? 0}
+                      />
+                    </div>
+                    <span className="text-[10px] font-bold uppercase tracking-[0.28em] text-gray-400">
+                      {stat.label}
+                    </span>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
           </div>
         </div>
       </section>
@@ -599,10 +674,10 @@ const HomePage = ({ onNavigate }: { onNavigate: (p: Page) => void }) => {
       {/* Elite Services Overview */}
       <section className="section-spacing bg-[linear-gradient(180deg,rgba(243,247,240,0.95),rgba(255,255,255,0.96))]">
         <div className="container-custom">
-          <div className="flex flex-col lg:flex-row lg:items-end justify-between mb-24 gap-12 text-left">
+          <div className="flex flex-col lg:flex-row lg:items-end justify-between mb-12 md:mb-24 gap-8 md:gap-12 text-left">
             <div className="max-w-3xl">
               <span className="text-secondary font-bold text-xs uppercase tracking-[0.5em] mb-6 block">Capabilities</span>
-              <h2 className="text-5xl md:text-7xl font-display font-bold text-gray-900 leading-[1.05] tracking-tight">
+              <h2 className="text-4xl md:text-6xl font-display font-bold text-gray-900 leading-[1.05] tracking-tight">
                 Engineering <span className="text-primary italic">Precision.</span> <br /> Delivered at Scale.
               </h2>
             </div>
@@ -646,7 +721,7 @@ const HomePage = ({ onNavigate }: { onNavigate: (p: Page) => void }) => {
 
       {/* Philosophy / Why Choose Us */}
       <section className="section-spacing bg-[#f6f9f4]">
-        <div className="container-custom grid grid-cols-1 lg:grid-cols-2 gap-24 items-center">
+        <div className="container-custom grid grid-cols-1 lg:grid-cols-2 gap-12 md:gap-24 items-center">
           <div className="relative">
             <div className="aspect-[4/5] rounded-[4rem] overflow-hidden shadow-[0_30px_80px_rgba(15,23,42,0.10)] relative z-10 border border-white/70">
               <img src={slideGroundColumns} alt="Solar site foundations" className="w-full h-full object-cover object-[center_18%]" />
@@ -665,7 +740,7 @@ const HomePage = ({ onNavigate }: { onNavigate: (p: Page) => void }) => {
           </div>
           <div className="text-left">
             <span className="text-secondary font-bold text-xs uppercase tracking-[0.4em] mb-6 block">The Vajra Standard</span>
-            <h2 className="text-5xl md:text-7xl font-display font-bold text-gray-900 mb-12 leading-tight">Engineering That <span className="text-primary italic">Lasts.</span></h2>
+            <h2 className="text-4xl md:text-6xl font-display font-bold text-gray-900 mb-12 leading-tight">Engineering That <span className="text-primary italic">Lasts.</span></h2>
             <div className="space-y-12">
               {[
                 { title: 'Bespoke Design', desc: 'Every rooftop has a unique profile. Our engineers create custom simulations to maximize photon capture based on your specific coordination.', icon: Settings },
@@ -690,10 +765,10 @@ const HomePage = ({ onNavigate }: { onNavigate: (p: Page) => void }) => {
       {/* High-Impact Portfolio */}
       <section className="section-spacing bg-[linear-gradient(180deg,rgba(255,255,255,0.96),rgba(243,247,240,0.92))]">
         <div className="container-custom">
-          <div className="flex flex-col md:flex-row md:items-end justify-between mb-24 gap-12 text-left">
+          <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 md:mb-24 gap-8 md:gap-12 text-left">
             <div>
               <span className="text-primary font-bold text-xs uppercase tracking-[0.4em] mb-6 block">Portfolio</span>
-              <h2 className="text-5xl md:text-8xl font-display font-bold text-gray-900 leading-[0.9] tracking-tighter">
+              <h2 className="text-4xl md:text-6xl font-display font-bold text-gray-900 leading-[0.95] tracking-tighter">
                 Signature <br /><span className="text-secondary italic">Installations.</span>
               </h2>
             </div>
@@ -747,7 +822,7 @@ const HomePage = ({ onNavigate }: { onNavigate: (p: Page) => void }) => {
 
             <div className="relative z-10 max-w-4xl mx-auto">
               <span className="text-secondary font-bold text-[11px] uppercase tracking-[0.5em] mb-10 block">{companyName}</span>
-              <h2 className="text-5xl md:text-8xl font-display font-bold mb-14 leading-[0.9] tracking-tighter">
+              <h2 className="text-4xl md:text-6xl font-display font-bold mb-12 leading-[0.95] tracking-tighter">
                 Ready to Invest in <br />
                 <span className="text-secondary italic">Clean Assets?</span>
               </h2>
@@ -801,15 +876,15 @@ const AboutPage = () => {
   ];
 
   return (
-    <div className="pt-32 bg-[linear-gradient(180deg,rgba(243,247,240,0.8),#fff_24%,#fff)]">
-      <section className="section-spacing text-primary">
+    <div className="pt-0 bg-[linear-gradient(180deg,rgba(243,247,240,0.8),#fff_24%,#fff)]">
+      <section className="pt-6 md:pt-10 pb-12 md:pb-24 text-primary">
         <div className="container-custom">
-          <div className="grid grid-cols-1 lg:grid-cols-[1.05fr_0.95fr] gap-16 items-center mb-24">
+          <div className="grid grid-cols-1 lg:grid-cols-[1.05fr_0.95fr] gap-12 md:gap-16 items-center mb-16 md:mb-24">
             <div className="text-left max-w-2xl">
               <span className="inline-flex items-center gap-2 rounded-full border border-secondary/20 bg-secondary/10 px-5 py-2 text-[10px] font-bold uppercase tracking-[0.4em] text-secondary mb-8">
                 About {companyName}
               </span>
-              <h1 className="text-5xl md:text-7xl xl:text-8xl font-display font-bold leading-[0.95] tracking-tight mb-8">
+              <h1 className="text-4xl md:text-6xl xl:text-7xl font-display font-bold leading-[0.96] tracking-tight mb-8">
                 Solar work that feels
                 <span className="block text-secondary italic">clear, premium, and built to last.</span>
               </h1>
@@ -852,7 +927,7 @@ const AboutPage = () => {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 mb-24">
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 mb-16 md:mb-24">
             {values.map((value, idx) => (
               <div key={idx} className="card-premium p-8 h-full">
                 <div className="w-14 h-14 rounded-2xl bg-primary/5 text-primary flex items-center justify-center mb-6">
@@ -864,7 +939,7 @@ const AboutPage = () => {
             ))}
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-[0.92fr_1.08fr] gap-12 items-center mb-24">
+          <div className="grid grid-cols-1 lg:grid-cols-[0.92fr_1.08fr] gap-10 md:gap-12 items-center mb-16 md:mb-24">
             <div className="relative">
               <div className="overflow-hidden rounded-[2.5rem] border border-gray-100 bg-white shadow-[0_30px_80px_rgba(0,0,0,0.06)]">
                 <img
@@ -953,15 +1028,15 @@ const AboutPage = () => {
 
 const ServicesPage = ({ onOpenDetail, onNavigate }: { onOpenDetail: (service: ServiceItem) => void; onNavigate: (p: Page) => void }) => {
   return (
-    <div className="pt-32 bg-[linear-gradient(180deg,rgba(243,247,240,0.8),#fff_22%,#fff)]">
-      <section className="section-spacing text-primary">
+    <div className="pt-0 bg-[linear-gradient(180deg,rgba(243,247,240,0.8),#fff_22%,#fff)]">
+      <section className="pt-6 md:pt-10 pb-12 md:pb-24 text-primary">
         <div className="container-custom">
-          <div className="grid grid-cols-1 lg:grid-cols-[1.05fr_0.95fr] gap-16 items-center mb-20">
+          <div className="grid grid-cols-1 lg:grid-cols-[1.05fr_0.95fr] gap-12 md:gap-16 items-center mb-16 md:mb-20">
             <div className="text-left max-w-2xl">
               <span className="inline-flex items-center gap-2 rounded-full border border-secondary/20 bg-secondary/10 px-5 py-2 text-[10px] font-bold uppercase tracking-[0.4em] text-secondary mb-8">
                 Services
               </span>
-              <h1 className="text-5xl md:text-7xl xl:text-8xl font-display font-bold leading-[0.95] tracking-tight mb-8">
+              <h1 className="text-4xl md:text-6xl xl:text-7xl font-display font-bold leading-[0.96] tracking-tight mb-8">
                 Solar services that feel
                 <span className="block text-secondary italic">clear, dependable, and well finished.</span>
               </h1>
@@ -984,21 +1059,21 @@ const ServicesPage = ({ onOpenDetail, onNavigate }: { onOpenDetail: (service: Se
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-stretch">
             {serviceItems.map((s, i) => (
               <motion.div
                 key={i}
-                whileHover={{ y: -6 }}
+                whileHover={{ y: -10 }}
                 transition={{ duration: 0.3 }}
-                className="group overflow-hidden rounded-[2.5rem] border border-gray-100 bg-white shadow-[0_24px_70px_rgba(15,23,42,0.06)]"
+                className="group flex h-full flex-col overflow-hidden rounded-[2.5rem] border border-gray-100 bg-white shadow-[0_24px_70px_rgba(15,23,42,0.06)]"
               >
-                <div className="relative h-[220px] overflow-hidden">
+                <div className="relative h-[250px] overflow-hidden">
                   <img
                     src={s.image}
                     alt={s.title}
                     className="absolute inset-0 h-full w-full object-cover object-center transition-transform duration-1000 group-hover:scale-105"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+                  <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(2,6,23,0.15),rgba(2,6,23,0.72))]" />
                   <div className="absolute top-6 left-6 flex items-center gap-3">
                     <span className="rounded-full bg-white/90 px-4 py-2 text-[9px] font-bold uppercase tracking-[0.35em] text-primary">
                       {s.num}
@@ -1007,19 +1082,34 @@ const ServicesPage = ({ onOpenDetail, onNavigate }: { onOpenDetail: (service: Se
                       {s.tagline}
                     </span>
                   </div>
-                  <div className="absolute bottom-5 left-5 flex h-12 w-12 items-center justify-center rounded-2xl bg-white/15 backdrop-blur-md text-white">
+                  <div className="absolute bottom-5 left-5 flex h-12 w-12 items-center justify-center rounded-2xl bg-white/15 backdrop-blur-md text-white transition-transform duration-500 group-hover:scale-110 group-hover:rotate-3">
                     <s.icon size={24} className="text-white" />
                   </div>
                 </div>
 
-                <div className="p-7 lg:p-8 text-left">
-                  <h2 className="text-2xl md:text-3xl font-display font-bold text-gray-900 tracking-tight mb-3">
-                    {s.title}
-                  </h2>
-                  <p className="text-gray-500 text-sm md:text-base font-light leading-relaxed mb-6 max-w-xl">
+                <div className="flex flex-1 flex-col p-7 lg:p-8 text-left">
+                  <div className="mb-5 flex items-center gap-3">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/6 text-primary">
+                      <s.icon size={22} />
+                    </div>
+                    <h2 className="text-2xl md:text-3xl font-display font-bold text-gray-900 tracking-tight">
+                      {s.title}
+                    </h2>
+                  </div>
+
+                  <p className="text-gray-500 text-sm md:text-base font-light leading-relaxed mb-6 max-w-xl flex-1">
                     {s.heroNote}
                   </p>
-                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+
+                  <div className="grid grid-cols-2 gap-3 mb-6">
+                    {s.benefits.slice(0, 2).map((benefit) => (
+                      <div key={benefit} className="rounded-2xl border border-gray-100 bg-surface px-4 py-4 text-sm leading-relaxed text-gray-600">
+                        {benefit}
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pt-2">
                     <p className="text-[10px] font-bold uppercase tracking-[0.35em] text-gray-400">
                       Full details on click
                     </p>
@@ -1066,8 +1156,8 @@ const ServicesPage = ({ onOpenDetail, onNavigate }: { onOpenDetail: (service: Se
 const ServiceDetailPage = ({ service, onNavigate }: { service: ServiceItem | null; onNavigate: (p: Page) => void }) => {
   if (!service) {
     return (
-      <div className="pt-40 bg-white min-h-screen">
-        <section className="section-spacing text-primary">
+      <div className="pt-0 bg-white min-h-screen">
+        <section className="pt-6 md:pt-10 pb-12 md:pb-24 text-primary">
           <div className="container-custom text-center">
             <h1 className="text-4xl md:text-6xl font-display font-bold mb-6">Select a service first</h1>
             <p className="text-gray-500 mb-10 max-w-2xl mx-auto">
@@ -1083,8 +1173,8 @@ const ServiceDetailPage = ({ service, onNavigate }: { service: ServiceItem | nul
   }
 
   return (
-    <div className="pt-32 bg-[linear-gradient(180deg,rgba(243,247,240,0.8),#fff_22%,#fff)]">
-      <section className="section-spacing text-primary">
+    <div className="pt-0 bg-[linear-gradient(180deg,rgba(243,247,240,0.8),#fff_22%,#fff)]">
+      <section className="pt-6 md:pt-10 pb-12 md:pb-24 text-primary">
         <div className="container-custom">
           <div className="grid grid-cols-1 lg:grid-cols-[0.98fr_1.02fr] gap-12 items-stretch">
             <div className="relative overflow-hidden rounded-[2.5rem] shadow-[0_30px_80px_rgba(15,23,42,0.10)] min-h-[520px]">
@@ -1211,12 +1301,12 @@ const ProjectsPage = ({ onOpenDetail, onNavigate }: { onOpenDetail: (project: Pr
     const filteredProjects = activeFilter === 'All' ? projectItems : projectItems.filter(p => p.type === activeFilter);
 
     return (
-        <div className="pt-40 bg-white min-h-screen">
-            <section className="section-spacing text-primary">
+        <div className="pt-0 bg-white min-h-screen">
+            <section className="pt-6 md:pt-10 pb-12 md:pb-24 text-primary">
                 <div className="container-custom">
-                    <div className="text-center max-w-5xl mx-auto mb-40">
+                    <div className="text-center max-w-5xl mx-auto mb-20 md:mb-40">
                         <span className="text-secondary font-bold text-[10px] uppercase tracking-[0.6em] mb-10 block">Global Portfolio</span>
-                        <h1 className="text-6xl md:text-8xl font-display font-bold mb-16 leading-[1.0] tracking-tight">
+                        <h1 className="text-4xl md:text-6xl font-display font-bold mb-12 leading-[1.0] tracking-tight">
                             Signature <br /><span className="text-primary italic">Deployments.</span>
                         </h1>
                         
@@ -1290,8 +1380,8 @@ const ProjectsPage = ({ onOpenDetail, onNavigate }: { onOpenDetail: (project: Pr
 const ProjectDetailPage = ({ project, onNavigate }: { project: ProjectItem | null; onNavigate: (p: Page) => void }) => {
   if (!project) {
     return (
-      <div className="pt-40 bg-white min-h-screen">
-        <section className="section-spacing text-primary">
+      <div className="pt-0 bg-white min-h-screen">
+        <section className="pt-6 md:pt-10 pb-12 md:pb-24 text-primary">
           <div className="container-custom text-center">
             <h1 className="text-4xl md:text-6xl font-display font-bold mb-6">Select a project first</h1>
             <p className="text-gray-500 mb-10 max-w-2xl mx-auto">
@@ -1307,8 +1397,8 @@ const ProjectDetailPage = ({ project, onNavigate }: { project: ProjectItem | nul
   }
 
   return (
-    <div className="pt-32 bg-[linear-gradient(180deg,rgba(243,247,240,0.8),#fff_22%,#fff)]">
-      <section className="section-spacing text-primary">
+    <div className="pt-0 bg-[linear-gradient(180deg,rgba(243,247,240,0.8),#fff_22%,#fff)]">
+      <section className="pt-6 md:pt-10 pb-12 md:pb-24 text-primary">
         <div className="container-custom">
           <div className="grid grid-cols-1 lg:grid-cols-[0.98fr_1.02fr] gap-12 items-stretch">
             <div className="relative overflow-hidden rounded-[2.5rem] shadow-[0_30px_80px_rgba(15,23,42,0.10)] min-h-[520px]">
@@ -1411,12 +1501,12 @@ const BlogPage = () => {
     ];
 
     return (
-        <div className="pt-40 bg-white">
-            <section className="section-spacing text-primary">
+        <div className="pt-0 bg-white">
+            <section className="pt-6 md:pt-10 pb-12 md:pb-24 text-primary">
                 <div className="container-custom">
-                    <div className="text-center max-w-4xl mx-auto mb-32">
+                    <div className="text-center max-w-4xl mx-auto mb-16 md:mb-32">
                         <span className="text-primary font-bold text-[10px] uppercase tracking-[0.5em] mb-8 block">Technical Intelligence</span>
-                        <h1 className="text-6xl md:text-9xl font-display font-bold leading-[0.8] mb-12 tracking-tighter">
+                        <h1 className="text-4xl md:text-7xl font-display font-bold leading-[0.9] mb-12 tracking-tighter">
                             The <span className="text-secondary italic">Energy News.</span>
                         </h1>
                         <p className="text-xl text-gray-500 font-light leading-relaxed max-w-2xl mx-auto">Staying ahead of the curve in the Indian renewable energy landscape with critical data and policy briefings.</p>
@@ -1460,13 +1550,13 @@ const BlogPage = () => {
 
 const ContactPage = () => {
     return (
-        <div className="pt-40 bg-white min-h-screen">
-            <section className="section-spacing text-primary">
+        <div className="pt-0 bg-white min-h-screen">
+            <section className="pt-6 md:pt-10 pb-12 md:pb-24 text-primary">
                 <div className="container-custom">
-                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-24 items-start">
+                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 md:gap-24 items-start">
                         <div className="lg:col-span-5 text-left">
                             <span className="text-secondary font-bold text-[10px] uppercase tracking-[0.5em] mb-10 block underline decoration-secondary decoration-4 underline-offset-8">Engagement</span>
-                            <h1 className="text-6xl md:text-8xl font-display font-bold mb-14 leading-[0.85] tracking-tighter">
+                            <h1 className="text-4xl md:text-6xl font-display font-bold mb-10 md:mb-14 leading-[0.9] tracking-tighter">
                                 Begin Your <br /> <span className="text-primary italic">Transition.</span>
                             </h1>
                             <p className="text-xl text-gray-400 font-light mb-16 leading-relaxed max-w-md">Our engineering consultants are ready to provide a full structural and energy audit for your infrastructure.</p>
